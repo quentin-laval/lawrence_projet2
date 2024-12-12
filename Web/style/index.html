@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lawrence</title>
+    <!-- Lien vers le fichier CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Formulaire de Connexion -->
+    <div id="login-form" class="form-container">
+      <h2 class="form-title">Connexion</h2>
+
+      <!-- Interrupteur pour choisir entre Email et Username -->
+      <div class="form-group">
+        <label for="toggle-switch">Changer la méthode de connexion</label>
+        <label class="switch">
+          <input type="checkbox" id="toggle-switch" />
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <!-- Champs Email et Username -->
+      <div class="form-group">
+        <label for="email" id="email-label">Email</label>
+        <input
+          type="email"
+          id="email-input"
+          placeholder="Email"
+          autocomplete="off"
+          required
+        />
+
+        <label for="username" id="username-label" class="hidden"
+          >Nom d'utilisateur</label
+        >
+        <input
+          type="text"
+          id="username-input"
+          placeholder="Nom d'utilisateur"
+          autocomplete="off"
+          class="hidden"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Mot de passe"
+          autocomplete="off"
+          required
+        />
+      </div>
+
+      <button id="login-button">Connexion</button>
+      <button id="switch-to-register" class="switch-button">
+        Créer un compte
+      </button>
+      <div id="login-message" class="message"></div>
+    </div>
+
+    <script>
+      // Gestion du slider pour basculer entre Email et Username
+      document
+        .getElementById("toggle-switch")
+        .addEventListener("change", function () {
+          const emailInput = document.getElementById("email-input");
+          const usernameInput = document.getElementById("username-input");
+          const emailLabel = document.getElementById("email-label");
+          const usernameLabel = document.getElementById("username-label");
+
+          if (this.checked) {
+            emailInput.classList.add("hidden");
+            emailLabel.classList.add("hidden");
+            usernameInput.classList.remove("hidden");
+            usernameLabel.classList.remove("hidden");
+          } else {
+            emailInput.classList.remove("hidden");
+            emailLabel.classList.remove("hidden");
+            usernameInput.classList.add("hidden");
+            usernameLabel.classList.add("hidden");
+          }
+        });
+
+      // Requête POST pour la connexion
+      document
+        .getElementById("login-button")
+        .addEventListener("click", function (event) {
+          event.preventDefault();
+
+          const toggleSwitch = document.getElementById("toggle-switch").checked;
+          const password = document.getElementById("password").value;
+          let data = { password: password };
+
+          if (toggleSwitch) {
+            const username = document.getElementById("username-input").value;
+            data.username = username;
+          } else {
+            const email = document.getElementById("email-input").value;
+            data.email = email;
+          }
+
+          // Envoi de la requête POST pour la connexion
+          fetch("http://http://192.168.64.187:5560/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              const loginMessage = document.getElementById("login-message");
+
+              // Vérifier si la connexion est réussie et que le token est reçu
+              if (result.success && result.uniqueToken) {
+                // Créer une date d'expiration pour le cookie (par exemple, 7 jours dans le futur)
+                const expirationDate = new Date();
+                expirationDate.setDate(expirationDate.getDate() + 7); // 7 jours
+
+                // Enregistrer le token dans un cookie avec une date d'expiration
+                document.cookie =
+                  "Projet_Lawrence_Token=" +
+                  encodeURIComponent(result.uniqueToken) +
+                  "; max-age=" +
+                  7 * 24 * 60 * 60 +
+                  "; path=/"; // Ajout du path
+
+                // Rediriger vers la page home.html si le token est présent
+                window.location.href = "home.html";
+              } else {
+                // Afficher un message d'erreur si la connexion échoue
+                loginMessage.textContent =
+                  result.message || "Identifiants invalides.";
+                loginMessage.style.color = "red";
+              }
+            })
+            .catch((error) => {
+              console.error("Erreur lors de la connexion:", error);
+              document.getElementById("login-message").textContent =
+                "Une erreur est survenue. Veuillez réessayer.";
+              document.getElementById("login-message").style.color = "red";
+            });
+        });
+    </script>
+
+    <!-- Formulaire de Création de Compte -->
+    <div id="register-form" class="form-container hidden">
+      <h2 class="form-title">Inscription</h2>
+      <p id="result_label"></p>
+      <div class="form-group">
+        <label for="username">Nom d'utilisateur</label>
+        <input
+          type="text"
+          id="username"
+          placeholder="Nom d'utilisateur"
+          autocomplete="off"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="register-email">Email</label>
+        <input
+          type="email"
+          id="register-email"
+          placeholder="Email"
+          autocomplete="off"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="register-password">Mot de passe</label>
+        <input
+          type="password"
+          id="register-password"
+          placeholder="Mot de passe"
+          autocomplete="off"
+          required
+        />
+      </div>
+      <button id="register-button" type="submit">Inscription</button>
+      <button id="switch-to-login" class="switch-button">
+        Retour à la connexion
+      </button>
+      <div id="register-message" class="message"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("register-button")
+        .addEventListener("click", function (event) {
+          event.preventDefault();
+
+          const username = document.getElementById("username").value;
+          const email = document.getElementById("register-email").value;
+          const password = document.getElementById("register-password").value;
+
+          // Création de l'objet JSON à envoyer
+          const data = {
+            user: username,
+            email: email,
+            password: password,
+          };
+
+          // Envoi de la requête POST
+          fetch("http://192.168.64.187:5560/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              const resultLabel = document.getElementById("result_label");
+              if (result.success) {
+                // Si réussite, vider les champs et afficher un message
+                document.getElementById("username").value = "";
+                document.getElementById("register-email").value = "";
+                document.getElementById("register-password").value = "";
+                resultLabel.textContent = "Compte créé avec succès !";
+                resultLabel.style.color = "green";
+              } else {
+                // Si erreur, afficher un message et vider les champs invalides
+                resultLabel.textContent = result.message;
+                resultLabel.style.color = "black";
+                if (result.errorField === "username") {
+                  document.getElementById("username").value = "";
+                }
+                if (result.errorField === "email") {
+                  document.getElementById("register-email").value = "";
+                }
+                if (result.errorField === "password") {
+                  document.getElementById("register-password").value = "";
+                }
+              }
+            })
+            .catch((error) => {
+              console.error("Erreur lors de l'inscription:", error);
+              document.getElementById("result_label").textContent =
+                "Une erreur est survenue. Veuillez réessayer.";
+              document.getElementById("result_label").style.color = "red";
+            });
+        });
+    </script>
+    <script>
+      document
+        .getElementById("login-button")
+        .addEventListener("click", function (event) {
+          event.preventDefault();
+
+          const toggleSwitch = document.getElementById("toggle-switch").checked;
+          const password = document.getElementById("password").value;
+          let data = { password: password };
+
+          if (toggleSwitch) {
+            const username = document.getElementById("username-input").value;
+            data.user = username;
+          } else {
+            const email = document.getElementById("email-input").value;
+            data.email = email;
+          }
+
+          // Requête POST pour la connexion
+          fetch("http://192.168.64.187:5560/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              const loginMessage = document.getElementById("login-message");
+
+              // Si le token est reçu, le stocker dans un cookie
+              if (result.uniqueToken) {
+                // Créer une date d'expiration pour le cookie (7 jours)
+                const expirationDate = new Date();
+                expirationDate.setDate(expirationDate.getDate() + 7);
+
+                // Stocker le token dans un cookie avec une durée de 7 jours
+                document.cookie =
+                  "Projet_Lawrence_Token=" +
+                  encodeURIComponent(result.uniqueToken) +
+                  "; max-age=" +
+                  7 * 24 * 60 * 60 +
+                  "; path=/";
+
+                // Rediriger vers la page home.html après succès
+                window.location.href = "home.html";
+              } else {
+                // Message d'erreur si la connexion échoue
+                loginMessage.textContent =
+                  result.message || "Identifiants invalides.";
+                loginMessage.style.color = "red";
+              }
+            })
+            .catch((error) => {
+              console.error("Erreur lors de la connexion:", error);
+              document.getElementById("login-message").textContent =
+                "Une erreur est survenue. Veuillez réessayer.";
+              document.getElementById("login-message").style.color = "red";
+            });
+        });
+    </script>
+  </body>
+  <footer>
+    <p>Ciel-2 : 2024-2025</p>
+    <p>Projet Lawrance</p>
+  </footer>
+  <script src="/script/main.js"></script>
+</html>

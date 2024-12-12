@@ -1,0 +1,10 @@
+Le fichier server.js est destinnée a l'utilisation sur une machine virtuelle avec nodeJS installée
+les modules néccéssaire afin de fonctionner correctement sont les suivants :
+express
+bcrypt
+helmet
+cors
+body-parser
+morgan
+ejs
+dotenv
