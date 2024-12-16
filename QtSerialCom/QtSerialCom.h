@@ -4,8 +4,8 @@
 #include "ui_QtSerialCom.h"
 #include <qserialport.h>
 #include "QtSerialCom.h"
-#include <QSerialPortInfo>
-#include <qsqldatabase.h>
+
+
 class QtSerialCom : public QMainWindow
 {
     Q_OBJECT
@@ -21,7 +21,7 @@ public:
 private:
     Ui::QtSerialComClass ui;
     QSerialPort* port;
-    QSqlDatabase db;
+   
 
 public slots:
     void OpenPort();
@@ -29,7 +29,5 @@ public slots:
    void onSerialPortReadyRead();
    void decodeGPSFrame(const QString& frameStr);
    double convertToDecimalDegrees(const QString& value, const QString& direction);
-   void ConnectToDatabase();
-   void InsertCoordinates(double latitude, double longitude);
    
 };

@@ -1,7 +1,7 @@
 #include "QtSerialCom.h"
 #include <QSerialPortInfo>
 #include <qdebug.h>
-#include "sql.h"
+
 
 QtSerialCom::QtSerialCom(QWidget* parent)
     : QMainWindow(parent)
@@ -19,7 +19,7 @@ QtSerialCom::~QtSerialCom()
 {}
 
 void QtSerialCom::OpenPort() {
-    ConnectToDatabase();
+    
     if (ui.comboBox->currentIndex() >= 0)
     {
         port = new QSerialPort(ui.comboBox->currentText());
@@ -86,7 +86,7 @@ void QtSerialCom::decodeGPSFrame(const QString& frameStr)
             );
 
             // Insert coordinates into the database
-            InsertCoordinates(latitude, longitude);
+           
         }
     }
 }
@@ -108,22 +108,3 @@ double QtSerialCom::convertToDecimalDegrees(const QString& value, const QString&
     return decimalDegrees;
 }
 
-void QtSerialCom::ConnectToDatabase()
-{
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("192.168.64.187");
-    db.setDatabaseName("Lawrence");
-    db.setUserName("LRC");
-    db.setPassword("lrc");
-
-    if (db.open())
-    {
-        qDebug() << "Connexion réussie";
-        ui.TextBox->appendPlainText("Connexion a la BDD réussie");
-    }
-    else
-    {
-        qDebug() << "Connexion échouée: " << db.lastError().text(); 
-        ui.TextBox->appendPlainText("Connexion a la BDD raté : " + db.lastError().text());
-    }
-}
